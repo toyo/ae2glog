@@ -11,7 +11,7 @@ import (
 
 func main() {
 	http.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
-		pl := ae2glog.NewLog(req)
+		pl := ae2glog.NewContext(req)
 		ae2glog.Infof(pl, "Test1!!")
 		fmt.Fprintf(w, "Hello World")
 

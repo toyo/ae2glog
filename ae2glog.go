@@ -1,6 +1,7 @@
 package ae2glog
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -35,16 +36,23 @@ type JSONPayload struct { // https://cloud.google.com/logging/docs/agent/configu
 	HTTPRequest httpRequest `json:"httpRequest"`
 }
 
-// NewLog send HTTP Request log.
-func NewLog(req *http.Request) (e JSONPayload) {
+type contextKey string
 
+const tokenContextKey contextKey = "AppEngine2ndGenerationLogger-JsonPayload"
+
+func NewContext(req *http.Request) (ctx context.Context) {
+	return AddContext(req.Context(), req)
+}
+
+// AddContext send HTTP Request log.
+func AddContext(origctx context.Context, req *http.Request) (ctx context.Context) {
 	projectID := os.Getenv(`GOOGLE_CLOUD_PROJECT`)
 	ctcs := strings.SplitN(strings.SplitN(req.Header.Get("X-Cloud-Trace-Context"), `;`, 2)[0], `/`, 2)
 	if len(ctcs) == 1 {
 		ctcs = append(ctcs, ``)
 	}
 
-	e = JSONPayload{
+	e := JSONPayload{
 		TraceID: ctcs[0],
 		Trace:   `projects/` + projectID + `/traces/` + ctcs[0],
 		SpanID:  ctcs[1],
@@ -53,6 +61,8 @@ func NewLog(req *http.Request) (e JSONPayload) {
 			Producer: "appengine.googleapis.com/request_id",
 		},
 	}
+
+	ctx = context.WithValue(origctx, tokenContextKey, e)
 
 	payload := e
 	payload.HTTPRequest = httpRequest{
@@ -68,8 +78,11 @@ func NewLog(req *http.Request) (e JSONPayload) {
 }
 
 // Defaultf send Application log.
-func Defaultf(pl JSONPayload, format string, a ...interface{}) {
-	payload := pl
+func Defaultf(ctx context.Context, format string, a ...interface{}) {
+	payload, ok := ctx.Value(tokenContextKey).(JSONPayload)
+	if !ok {
+		panic("Defaultf")
+	}
 	payload.Message = fmt.Sprintf(format, a...)
 	payload.Severity = "DEFAULT"
 
@@ -77,8 +90,11 @@ func Defaultf(pl JSONPayload, format string, a ...interface{}) {
 }
 
 // Debugf send Application log.
-func Debugf(pl JSONPayload, format string, a ...interface{}) {
-	payload := pl
+func Debugf(ctx context.Context, format string, a ...interface{}) {
+	payload, ok := ctx.Value(tokenContextKey).(JSONPayload)
+	if !ok {
+		panic("Debugf")
+	}
 	payload.Message = fmt.Sprintf(format, a...)
 	payload.Severity = "DEBUG"
 
@@ -86,8 +102,11 @@ func Debugf(pl JSONPayload, format string, a ...interface{}) {
 }
 
 // Infof send Application log.
-func Infof(pl JSONPayload, format string, a ...interface{}) {
-	payload := pl
+func Infof(ctx context.Context, format string, a ...interface{}) {
+	payload, ok := ctx.Value(tokenContextKey).(JSONPayload)
+	if !ok {
+		panic("Infof")
+	}
 	payload.Message = fmt.Sprintf(format, a...)
 	payload.Severity = "INFO"
 
@@ -95,8 +114,11 @@ func Infof(pl JSONPayload, format string, a ...interface{}) {
 }
 
 // Noticef send Application log.
-func Noticef(pl JSONPayload, format string, a ...interface{}) {
-	payload := pl
+func Noticef(ctx context.Context, format string, a ...interface{}) {
+	payload, ok := ctx.Value(tokenContextKey).(JSONPayload)
+	if !ok {
+		panic("Noticef")
+	}
 	payload.Message = fmt.Sprintf(format, a...)
 	payload.Severity = "NOTICE"
 
@@ -104,8 +126,11 @@ func Noticef(pl JSONPayload, format string, a ...interface{}) {
 }
 
 // Warningf send Application log.
-func Warningf(pl JSONPayload, format string, a ...interface{}) {
-	payload := pl
+func Warningf(ctx context.Context, format string, a ...interface{}) {
+	payload, ok := ctx.Value(tokenContextKey).(JSONPayload)
+	if !ok {
+		panic("Warningf")
+	}
 	payload.Message = fmt.Sprintf(format, a...)
 	payload.Severity = "WARNING"
 
@@ -113,8 +138,11 @@ func Warningf(pl JSONPayload, format string, a ...interface{}) {
 }
 
 // Errorf send Application log.
-func Errorf(pl JSONPayload, format string, a ...interface{}) {
-	payload := pl
+func Errorf(ctx context.Context, format string, a ...interface{}) {
+	payload, ok := ctx.Value(tokenContextKey).(JSONPayload)
+	if !ok {
+		panic("Errorf")
+	}
 	payload.Message = fmt.Sprintf(format, a...)
 	payload.Severity = "ERROR"
 
@@ -122,8 +150,11 @@ func Errorf(pl JSONPayload, format string, a ...interface{}) {
 }
 
 // Criticalf send Application log.
-func Criticalf(pl JSONPayload, format string, a ...interface{}) {
-	payload := pl
+func Criticalf(ctx context.Context, format string, a ...interface{}) {
+	payload, ok := ctx.Value(tokenContextKey).(JSONPayload)
+	if !ok {
+		panic("Criticalf")
+	}
 	payload.Message = fmt.Sprintf(format, a...)
 	payload.Severity = "CRITICAL"
 
@@ -131,8 +162,11 @@ func Criticalf(pl JSONPayload, format string, a ...interface{}) {
 }
 
 // Alertf send Application log.
-func Alertf(pl JSONPayload, format string, a ...interface{}) {
-	payload := pl
+func Alertf(ctx context.Context, format string, a ...interface{}) {
+	payload, ok := ctx.Value(tokenContextKey).(JSONPayload)
+	if !ok {
+		panic("Alertf")
+	}
 	payload.Message = fmt.Sprintf(format, a...)
 	payload.Severity = "ALERT"
 
@@ -140,8 +174,11 @@ func Alertf(pl JSONPayload, format string, a ...interface{}) {
 }
 
 // Emergencyf send Application log.
-func Emergencyf(pl JSONPayload, format string, a ...interface{}) {
-	payload := pl
+func Emergencyf(ctx context.Context, format string, a ...interface{}) {
+	payload, ok := ctx.Value(tokenContextKey).(JSONPayload)
+	if !ok {
+		panic("Emergencyf")
+	}
 	payload.Message = fmt.Sprintf(format, a...)
 	payload.Severity = "EMERGENCY"
 
