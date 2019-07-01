@@ -40,6 +40,7 @@ type contextKey string
 
 const tokenContextKey contextKey = "AppEngine2ndGenerationLogger-JsonPayload"
 
+// NewContext makes context.
 func NewContext(req *http.Request) (ctx context.Context) {
 	return AddContext(req.Context(), req)
 }
@@ -48,32 +49,34 @@ func NewContext(req *http.Request) (ctx context.Context) {
 func AddContext(origctx context.Context, req *http.Request) (ctx context.Context) {
 	projectID := os.Getenv(`GOOGLE_CLOUD_PROJECT`)
 	ctcs := strings.SplitN(strings.SplitN(req.Header.Get("X-Cloud-Trace-Context"), `;`, 2)[0], `/`, 2)
-	if len(ctcs) == 1 {
-		ctcs = append(ctcs, ``)
+	if len(ctcs) != 0 {
+		if len(ctcs) == 1 {
+			ctcs = append(ctcs, ``)
+		}
+
+		e := JSONPayload{
+			TraceID: ctcs[0],
+			Trace:   `projects/` + projectID + `/traces/` + ctcs[0],
+			SpanID:  ctcs[1],
+			Operation: operation{
+				ID:       req.Header.Get("X-Appengine-Request-Log-Id"),
+				Producer: "appengine.googleapis.com/request_id",
+			},
+		}
+
+		ctx = context.WithValue(origctx, tokenContextKey, e)
+
+		payload := e
+		payload.HTTPRequest = httpRequest{
+			RequestMethod: req.Method,
+			RequestURL:    req.URL.String(),
+			RequestSize:   strconv.Itoa(int(req.ContentLength)),
+			UserAgent:     req.UserAgent(),
+			Referer:       req.Referer(),
+		}
+
+		json.NewEncoder(os.Stderr).Encode(payload)
 	}
-
-	e := JSONPayload{
-		TraceID: ctcs[0],
-		Trace:   `projects/` + projectID + `/traces/` + ctcs[0],
-		SpanID:  ctcs[1],
-		Operation: operation{
-			ID:       req.Header.Get("X-Appengine-Request-Log-Id"),
-			Producer: "appengine.googleapis.com/request_id",
-		},
-	}
-
-	ctx = context.WithValue(origctx, tokenContextKey, e)
-
-	payload := e
-	payload.HTTPRequest = httpRequest{
-		RequestMethod: req.Method,
-		RequestURL:    req.URL.String(),
-		RequestSize:   strconv.Itoa(int(req.ContentLength)),
-		UserAgent:     req.UserAgent(),
-		Referer:       req.Referer(),
-	}
-
-	json.NewEncoder(os.Stderr).Encode(payload)
 	return
 }
 
@@ -81,11 +84,10 @@ func AddContext(origctx context.Context, req *http.Request) (ctx context.Context
 func Defaultf(ctx context.Context, format string, a ...interface{}) {
 	payload, ok := ctx.Value(tokenContextKey).(JSONPayload)
 	if !ok {
-		panic("Defaultf")
+		fmt.Printf(format, a...)
 	}
 	payload.Message = fmt.Sprintf(format, a...)
 	payload.Severity = "DEFAULT"
-
 	json.NewEncoder(os.Stdout).Encode(payload)
 }
 
