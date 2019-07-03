@@ -84,7 +84,8 @@ func AddContext(origctx context.Context, req *http.Request) (ctx context.Context
 func Defaultf(ctx context.Context, format string, a ...interface{}) {
 	payload, ok := ctx.Value(tokenContextKey).(JSONPayload)
 	if !ok {
-		fmt.Printf(format, a...)
+		fmt.Printf("Default: "+format, a...)
+		return
 	}
 	payload.Message = fmt.Sprintf(format, a...)
 	payload.Severity = "DEFAULT"
@@ -95,7 +96,8 @@ func Defaultf(ctx context.Context, format string, a ...interface{}) {
 func Debugf(ctx context.Context, format string, a ...interface{}) {
 	payload, ok := ctx.Value(tokenContextKey).(JSONPayload)
 	if !ok {
-		panic("Debugf")
+		fmt.Printf("Debug: "+format, a...)
+		return
 	}
 	payload.Message = fmt.Sprintf(format, a...)
 	payload.Severity = "DEBUG"
@@ -107,7 +109,8 @@ func Debugf(ctx context.Context, format string, a ...interface{}) {
 func Infof(ctx context.Context, format string, a ...interface{}) {
 	payload, ok := ctx.Value(tokenContextKey).(JSONPayload)
 	if !ok {
-		panic("Infof")
+		fmt.Printf("Info: "+format, a...)
+		return
 	}
 	payload.Message = fmt.Sprintf(format, a...)
 	payload.Severity = "INFO"
@@ -119,7 +122,8 @@ func Infof(ctx context.Context, format string, a ...interface{}) {
 func Noticef(ctx context.Context, format string, a ...interface{}) {
 	payload, ok := ctx.Value(tokenContextKey).(JSONPayload)
 	if !ok {
-		panic("Noticef")
+		fmt.Printf("Notice: "+format, a...)
+		return
 	}
 	payload.Message = fmt.Sprintf(format, a...)
 	payload.Severity = "NOTICE"
@@ -131,7 +135,8 @@ func Noticef(ctx context.Context, format string, a ...interface{}) {
 func Warningf(ctx context.Context, format string, a ...interface{}) {
 	payload, ok := ctx.Value(tokenContextKey).(JSONPayload)
 	if !ok {
-		panic("Warningf")
+		fmt.Printf("Warning: "+format, a...)
+		return
 	}
 	payload.Message = fmt.Sprintf(format, a...)
 	payload.Severity = "WARNING"
@@ -143,7 +148,8 @@ func Warningf(ctx context.Context, format string, a ...interface{}) {
 func Errorf(ctx context.Context, format string, a ...interface{}) {
 	payload, ok := ctx.Value(tokenContextKey).(JSONPayload)
 	if !ok {
-		panic("Errorf")
+		fmt.Printf("Error: "+format, a...)
+		return
 	}
 	payload.Message = fmt.Sprintf(format, a...)
 	payload.Severity = "ERROR"
@@ -155,7 +161,8 @@ func Errorf(ctx context.Context, format string, a ...interface{}) {
 func Criticalf(ctx context.Context, format string, a ...interface{}) {
 	payload, ok := ctx.Value(tokenContextKey).(JSONPayload)
 	if !ok {
-		panic("Criticalf")
+		fmt.Printf("Critical: "+format, a...)
+		return
 	}
 	payload.Message = fmt.Sprintf(format, a...)
 	payload.Severity = "CRITICAL"
@@ -167,7 +174,8 @@ func Criticalf(ctx context.Context, format string, a ...interface{}) {
 func Alertf(ctx context.Context, format string, a ...interface{}) {
 	payload, ok := ctx.Value(tokenContextKey).(JSONPayload)
 	if !ok {
-		panic("Alertf")
+		fmt.Printf("Alert: "+format, a...)
+		return
 	}
 	payload.Message = fmt.Sprintf(format, a...)
 	payload.Severity = "ALERT"
@@ -179,7 +187,8 @@ func Alertf(ctx context.Context, format string, a ...interface{}) {
 func Emergencyf(ctx context.Context, format string, a ...interface{}) {
 	payload, ok := ctx.Value(tokenContextKey).(JSONPayload)
 	if !ok {
-		panic("Emergencyf")
+		fmt.Printf("Emergency: "+format, a...)
+		return
 	}
 	payload.Message = fmt.Sprintf(format, a...)
 	payload.Severity = "EMERGENCY"
